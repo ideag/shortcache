@@ -11,7 +11,6 @@ Text Domain: shortcache
 
 // TO DO invalidate on save
 // TO DO catch hooks
-// TO DO catch assets
 
 add_action( 'plugins_loaded', array( 'ShortCache', 'init' ) );
 class ShortCache {
@@ -48,15 +47,55 @@ class ShortCache {
 		$current_user = (string) get_current_user_id();
 		//Build unique cache key
 		$cache_key = "shortcache-{$current_url}-{$current_user}-shortcode_{$tag}-content_{$content_serialized}-atts_{$atts_serialized}";
-		$cache_interval = self::$options['cache_interval'];
 
 		$return = get_transient( $cache_key );
-		if ( !$return ) {
-			$return = do_shortcode( self::cache_false( $tag, $attr, $m ) );
-			set_transient( $cache_key, $return, $cache_interval * HOUR_IN_SECONDS );
-			return $return;
+		if ( $return ) {
+			self::_restore_scripts( $return );
+			return '<!--cached by ShortCache-->'.$return['content'].'<!--/cached by ShortCache-->';
 		}
-		return '<!--cached by ShortCache-->'.$return.'<!--/cached by ShortCache-->';
+		$scripts_old = self::_get_scripts();
+		$return = array( 'content' => do_shortcode( self::cache_false( $tag, $attr, $m ) ) );
+		$return['scripts'] = self::_diff_scripts( $scripts_old, self::_get_scripts() );
+		self::_set_cache( $cache_key, $return );
+		return $return['content'];
+	}
+
+	private static function _restore_scripts( $return ) {
+		foreach( $return['scripts']['register'] as $script ) {
+			wp_register_script( $script->handle, $script->src, $script->deps, $script->ver );
+			if ( isset( $script->extra['data'] ) ) {
+				wp_add_inline_script( $script->handle, $script->extra['data'], 'before' );
+			}
+			if ( isset( $script->extra['after'] ) ) {
+				foreach( $script->extra['after'] as $position => $data ) {
+					wp_add_inline_script( $script->handle, $data );
+				}
+			}
+		}
+		foreach( $return['scripts']['queue'] as $script ) {
+			wp_enqueue_script( $script );
+		}
+	}
+	private static function _diff_scripts( $old , $new ) {
+		$diff = array_diff( array_keys( $new->registered ), array_keys( $old->registered ) );
+		$cache = array(
+			'register'	=> array(),
+		);
+		foreach ( $diff as $script ) {
+			$cache['register'][ $script ] = clone $new->registered[ $script ];
+		}
+		$diff = array_diff( $new->queue, $old->queue );
+		$cache['queue'] = $diff;
+		return $cache;
+	}
+	private static function _get_scripts() {
+		global $wp_scripts;
+		return clone $wp_scripts;
+	}
+
+	private static function _set_cache( $cache_key, $value ) {
+		$cache_interval = self::$options['cache_interval'];
+		return set_transient( $cache_key, $value, $cache_interval * HOUR_IN_SECONDS );
 	}
 
 	private static function _get_current_url() {
@@ -85,8 +124,12 @@ class ShortCache {
 		return date('Y-m-d H:i:s');
 	}
 	public static function hook(){
-		wp_enqueue_script( 'jquery-ui' );
-		echo 'hooks some styles';
+		wp_register_script( 'shortcache', plugins_url( 'test.js', __FILE__ ), array( 'jquery' ), false, true );
+		wp_add_inline_script( 'shortcache', 'var test;' );
+		wp_localize_script( 'shortcache', 'shortache_string', array( 'test' ) );
+		wp_enqueue_script( 'jquery-ui-core' );
+		wp_enqueue_script( 'shortcache' );
+		return 'hooks some scripts';
 	}
 
 	public static function init_options() {
