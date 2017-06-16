@@ -3,7 +3,7 @@ Contributors: ideag
 Tags: shortcode, cache, shortcode caching, caching
 Donate link: http://arunas.co#coffee
 Requires at least: 4.7
-Tested up to: 4.7
+Tested up to: 4.8
 Stable tag: 0.2.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -33,11 +33,27 @@ An enormous amount of coffee was consumed while developing these plugins, so if 
 1. (optional) Modify options via `WP Admin > Settings > ShortCache`, if needed.
 1. In the shortcode You want to cache, add a `cache` attribute: `[gallery cache]`.
 1. (optional) You can define a custom cache interval by passing that to the attribute like this: `[gallery cache="5"]` - this will be cached for 5 hours.
-1. (optional) You can also define a custom cache scope by passing a `cache-scope` attribue: `[gallery cache cache-scope="user_id,post_id"]`. This will create different caches for every user and every post.
+1. (optional) You can also define a custom cache scope by passing a `cache-scope` attribute: `[gallery cache cache-scope="user_id,post_id"]`. This will create different caches for every user and every post.
 
 == Frequently Asked Questions ==
 
-Send them to ask@arunas.co
+= So, how do I cache a shortcode? =
+
+In the shortcode You want to cache, add a `cache` attribute: `[gallery cache]`.
+
+= Can I control how long should it stay in cache? =
+
+Yes, there is a setting for that in `Settings > ShortCache`. Also You can define a custom cache interval by passing that to the attribute like this: `[gallery cache="5"]` - this will be cached for 5 hours.
+
+= What does "Cache Scope" mean? =
+
+This defines how granular the cache should be. If you disable all check-boxes, one cache value will be stored for the whole site. If you check 'User ID', a different value will be cached for every logged in user. You can also differentiate it by Post ID or the URI where the short code is displayed.
+
+The "Last Update Timestamp" setting ensures that caches are regenerated if there is an update (a saved post/page) somewhere on the site.
+
+= Can I control Cache Scope on per shortcode basis? =
+
+Yes, You can define a custom cache scope by passing a `cache-scope` attribute: `[gallery cache cache-scope="user_id,post_id"]`. This will create different cache values for every user and every post.
 
 == Screenshots ==
 
