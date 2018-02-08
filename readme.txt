@@ -3,7 +3,7 @@ Contributors: ideag
 Tags: shortcode, cache, shortcode caching, caching
 Donate link: http://arunas.co#coffee
 Requires at least: 4.7
-Tested up to: 4.8
+Tested up to: 4.9
 Stable tag: 0.2.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
